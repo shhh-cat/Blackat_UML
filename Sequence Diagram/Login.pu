@@ -1,0 +1,40 @@
+@startuml
+
+actor "Người dùng" as user
+boundary "Ứng dụng" as app
+participant Firebase as firebase
+participant "Máy chủ" as server
+database "CSDL" as db
+
+user -> app: Đăng nhập
+user <-- app: Yêu cầu nhập số điện thoại
+user -> app: Nhập số điện thoại
+app -> firebase: Gửi yêu cầu đăng nhập bằng số điện thoại
+alt thành công
+    app <-- firebase: Firebase gửi SMS OTP cho người dùng
+    user <-- app: Yêu cầu nhập OTP code
+    user -> app: Nhập mã OTP code
+    app -> firebase: Xác thực OTP code
+    alt thành công
+        app <-- firebase: Nhận thông tin (bao gồm SĐT và token_id) và lưu trữ trong CSDL cục bộ
+        app -> server: Yêu cầu thiết lập kết nối máy chủ Socket (kèm theo token_id, registration_id)
+        server -> firebase: Xác thực token_id với Firebase
+        alt hợp lệ
+            server ->> db: Tạo user nếu chưa tồn tại, tạo device dựa theo registration_id nếu chưa tồn tại
+            app <-- server: Thiết lập kết nối ứng dụng
+            user <-- app: Vào giao diện chính
+        else không hợp lệ
+            app <-- server: Từ chối yêu cầu kết nối
+            user <-- app: Thông báo lỗi đến người dùng
+        end
+    else không thành công
+        app <-- firebase: Mã xác thực không hợp lệ
+        user <-- app: Thông báo lỗi đến người dùng
+    end
+else không thành công
+    app <-- firebase: Không thành công
+    user <-- app: Thông báo lỗi đến người dùng
+end
+
+
+@enduml
