@@ -1,0 +1,34 @@
+@startuml
+
+actor "Người dùng" as user
+boundary "Ứng dụng" as app
+participant "Máy chủ" as server
+database "CSDL" as db
+participant "Đối phương" as partner
+
+user -> app: Gửi tin nhắn
+activate app
+activate user
+app -> app: Mã hóa tin nhắn, lưu trữ cục bộ, kiểm tra kết nối
+user <-- app: Hiển thị tin nhắn, trạng thái "đang gửi"
+alt Đang trực tuyến
+    app -> server: Yêu cầu gửi bản mã đến đối phương
+    activate server
+    server -> server: Kiểm tra kết nối của đối phương
+    alt Đối phương trực tuyến
+        server ->> partner: Gửi bản mã đến đối phương
+    else Đối phương ngoại tuyến
+        server ->> db: Lưu trữ tin nhắn vào "Mailbox"
+    end
+    app <-- server: Phản hồi "đã gửi"
+    user <-- app: Cập nhật trạng thái tin nhắn "đã gửi"
+
+else Đang ngoại tuyến
+    app -> app: Lưu tin nhắn vào hàng đợi chờ kết nối.
+end
+
+deactivate app
+deactivate user
+
+
+@enduml

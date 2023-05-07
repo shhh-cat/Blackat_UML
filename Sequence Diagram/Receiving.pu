@@ -1,0 +1,37 @@
+@startuml
+
+
+actor "Người dùng" as user
+boundary "Ứng dụng" as app
+participant "Máy chủ" as server
+database "CSDL" as db
+participant "Đối phương" as partner
+
+user -> app: Khởi động ứng dụng
+activate app
+activate user
+app -> server: Thiết lập kết nối (trạng thái trực tuyến)
+
+
+activate server
+server -> db: Truy vấn các tin nhắn từ Mailbox
+activate db
+server <-- db: Trả về các tin nhắn sau đó xóa chúng
+deactivate db
+server --> app: Nhận các tin nhắn người dùng đã bỏ lỡ khi ngoại tuyến
+
+
+app -> app: Giải mã tin nhắn, lưu trữ cục bộ
+user <-- app: Hiển thị tin nhắn
+app -> app: Bắt đầu lắng nghe tin nhắn mới
+loop Cho đến khi ngoại tuyến
+    server <<-- partner: Gửi tin nhắn mới
+    app <<-- server: Nhận tin nhắn mới
+    app -> app: Giải mã tin nhắn, lưu trữ cục bộ
+    user <-- app: Hiển thị tin nhắn
+end
+deactivate app
+deactivate user
+
+
+@enduml
