@@ -2,8 +2,8 @@
 
 actor "Người dùng" as user
 boundary "Ứng dụng" as app
-participant "Máy chủ" as server
-database "CSDL" as db
+participant "Hệ thống" as server
+database "Mailbox" as db
 participant "Đối phương" as partner
 
 user -> app: Gửi tin nhắn

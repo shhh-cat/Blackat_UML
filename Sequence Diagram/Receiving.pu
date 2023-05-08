@@ -4,7 +4,7 @@
 actor "Người dùng" as user
 boundary "Ứng dụng" as app
 participant "Máy chủ" as server
-database "CSDL" as db
+database "Mailbox" as db
 participant "Đối phương" as partner
 
 user -> app: Khởi động ứng dụng
