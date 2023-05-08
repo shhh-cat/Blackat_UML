@@ -1,0 +1,56 @@
+@startuml
+ 
+left to right direction
+:Người dùng: as user
+:Máy chủ: as server
+:Firebase: as firebase
+:Database: as db
+package "Quản lí phiên đăng nhập" {
+    usecase "Đăng nhập" as login
+    usecase "Đăng xuất" as logout
+}
+package "Xác thực người dùng" {
+    usecase "Gửi mã xác thực" as otp
+    usecase "Xác thực token" as verifyToken
+}
+package "Luồng tin nhắn" {
+    usecase "Gửi tin nhắn đi" as incoming
+    usecase "Nhận tin nhắn đến" as outgoing
+}
+
+package "Cơ sở dữ liệu" {
+    usecase "Lưu tin nhắn tạm thời" as storing
+    usecase "Tạo người dùng nếu chưa tồn tại" as createUser
+    usecase "Lấy và xóa tin nhắn tạm thời" as getting
+}
+package "Trò chuyện" {
+    usecase "Gửi tin nhắn" as sending
+    usecase "Nhận tin nhắn" as receiving
+    usecase "Xem tin nhắn" as view
+}
+usecase "Nhận thông báo tin nhắn" as notification
+user --> login
+user --> logout
+user --> sending
+user --> receiving
+user --> view
+login ..> otp : <<include>>
+login ..> verifyToken : <<include>>
+verifyToken ..> createUser : <<include>>
+firebase --> otp
+server --> verifyToken
+server --> incoming
+server --> outgoing
+db --> storing
+db --> getting
+db --> createUser
+note "Khi người dùng ngoại tuyến (không kết nối)" as offline
+note "Nếu có và khi người dùng trực tuyến (đã kết nối)" as online
+note "Khi ứng dụng không được mở" as closingApp
+outgoing .. offline
+offline ..> storing: <<extend>>
+incoming .. online
+online ..> getting: <<extend>>
+receiving .. closingApp 
+closingApp ..> notification: <<extend>>
+@enduml
