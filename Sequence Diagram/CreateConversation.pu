@@ -1,0 +1,33 @@
+@startuml
+
+actor "Người dùng" as user
+boundary "Ứng dụng" as app
+participant "Hệ thống" as server
+database "User" as db
+
+user -> app: Tạo cuộc trò chuyện
+activate app
+activate user
+user <-- app: Yêu cầu nhập số điện thoại
+user -> app: Nhập số điện thoại
+app -> app: Xác thực định dạng e164
+app -> server: Yêu cầu tìm kiểm bằng số điện thoại
+activate server
+server -> db: Tìm kiếm người dùng
+activate db
+server <-- db: Trả kết quả
+deactivate db
+alt Người dùng tồn tại
+    server --> app: Trả về kết quả
+    user <-- app: Hiển thị giao diện nhắn tin
+
+else Người dùng không tồn tại
+    server --> app: Trả về kết quả null
+    user <-- app: Gợi ý mời sử dụng ứng dụng 
+end
+
+deactivate app
+deactivate user
+
+
+@enduml

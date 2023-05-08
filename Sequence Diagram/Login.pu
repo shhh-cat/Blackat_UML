@@ -3,12 +3,16 @@
 actor "Người dùng" as user
 boundary "Ứng dụng" as app
 participant Firebase as firebase
-participant "Máy chủ" as server
+participant "Hệ thống" as server
 database "User & Device" as db
+database "Key" as key
 
 user -> app: Đăng nhập
+activate app
+activate user
 user <-- app: Yêu cầu nhập số điện thoại
 user -> app: Nhập số điện thoại
+app -> app: Xác thực định dạng e164
 app -> firebase: Gửi yêu cầu đăng nhập bằng số điện thoại
 alt thành công
     app <-- firebase: Firebase gửi SMS OTP cho người dùng
@@ -17,11 +21,13 @@ alt thành công
     app -> firebase: Xác thực OTP code
     alt thành công
         app <-- firebase: Nhận thông tin (bao gồm SĐT và token_id) và lưu trữ trong CSDL cục bộ
-        app -> server: Yêu cầu thiết lập kết nối máy chủ Socket (kèm theo token_id, registration_id)
+        app -> server: Yêu cầu thiết lập kết nối máy chủ Socket\n(kèm theo token_id, registration_id)
         server -> firebase: Xác thực token_id với Firebase
         alt hợp lệ
-            server ->> db: Tạo user nếu chưa tồn tại, tạo device dựa theo registration_id nếu chưa tồn tại
+            server ->> db: Tạo user, device dựa theo registration_id\nnếu chưa tồn tại
             app <-- server: Thiết lập kết nối ứng dụng
+            app ->> server: Tải lên các khóa trước và chữ ký (prekey bundle)
+            server ->> key: Lưu trữ prekey bundle
             user <-- app: Vào giao diện chính
         else không hợp lệ
             app <-- server: Từ chối yêu cầu kết nối
@@ -35,6 +41,7 @@ else không thành công
     app <-- firebase: Không thành công
     user <-- app: Thông báo lỗi đến người dùng
 end
-
+deactivate app
+deactivate user
 
 @enduml

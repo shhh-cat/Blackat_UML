@@ -3,7 +3,7 @@
 
 actor "Người dùng" as user
 boundary "Ứng dụng" as app
-participant "Máy chủ" as server
+participant "Hệ thống" as server
 database "Mailbox" as db
 participant "Đối phương" as partner
 

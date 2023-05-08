@@ -4,16 +4,24 @@ actor "Người dùng" as user
 boundary "Ứng dụng" as app
 participant "Hệ thống" as server
 database "Mailbox" as db
+database "Key" as kDb
 participant "Đối phương" as partner
 
 user -> app: Gửi tin nhắn
 activate app
 activate user
-app -> app: Mã hóa tin nhắn, lưu trữ cục bộ, kiểm tra kết nối
+app -> server: Lấy các gói khóa trước (prekey bundle) của từng thiết bị đối phương
+activate server
+server -> kDb: Truy vấn
+activate kDb
+server <-- kDb: Trả kết quả
+deactivate kDb
+app <-- server: Trả về kết quả
+app -> app: Thỏa thuận khóa với các thiết bị mới (nếu có),\nMã hóa tin nhắn và lưu trữ cục bộ, kiểm tra kết nối
 user <-- app: Hiển thị tin nhắn, trạng thái "đang gửi"
 alt Đang trực tuyến
     app -> server: Yêu cầu gửi bản mã đến đối phương
-    activate server
+    
     server -> server: Kiểm tra kết nối của đối phương
     alt Đối phương trực tuyến
         server ->> partner: Gửi bản mã đến đối phương
