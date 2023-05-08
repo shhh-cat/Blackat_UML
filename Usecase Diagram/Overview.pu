@@ -2,9 +2,7 @@
  
 left to right direction
 :Người dùng: as user
-:Máy chủ: as server
-:Firebase: as firebase
-:Database: as db
+:Hệ thống: as server
 package "Quản lí phiên đăng nhập" {
     usecase "Đăng nhập" as login
     usecase "Đăng xuất" as logout
@@ -20,37 +18,49 @@ package "Luồng tin nhắn" {
 
 package "Cơ sở dữ liệu" {
     usecase "Lưu tin nhắn tạm thời" as storing
-    usecase "Tạo người dùng nếu chưa tồn tại" as createUser
+    usecase "Lưu trữ dữ liệu người dùng, thiết bị và các khóa" as createUserData
     usecase "Lấy và xóa tin nhắn tạm thời" as getting
+    usecase "Lấy dữ liệu người dùng, thiết bị và các khóa" as getUserData
 }
 package "Trò chuyện" {
+    usecase "Xem tin nhắn" as view
+    usecase "Tạo cuộc trò chuyện mới" as new
     usecase "Gửi tin nhắn" as sending
     usecase "Nhận tin nhắn" as receiving
-    usecase "Xem tin nhắn" as view
 }
+usecase "Tìm kiếm số điện thoại" as searching
 usecase "Nhận thông báo tin nhắn" as notification
 user --> login
 user --> logout
 user --> sending
 user --> receiving
 user --> view
+user --> new
+new ..> searching: <<include>>
 login ..> otp : <<include>>
 login ..> verifyToken : <<include>>
-verifyToken ..> createUser : <<include>>
 firebase --> otp
 server --> verifyToken
 server --> incoming
 server --> outgoing
+server --> searching
 db --> storing
 db --> getting
-db --> createUser
+db --> createUserData
+db --> getUserData
+note "Đăng nhập thành công" as logged
 note "Khi người dùng ngoại tuyến (không kết nối)" as offline
 note "Nếu có và khi người dùng trực tuyến (đã kết nối)" as online
 note "Khi ứng dụng không được mở" as closingApp
+note "Tìm kiếm có kết quả" as successfulSearching
+verifyToken .. logged
+logged ..> createUserData : <<extend>>
 outgoing .. offline
 offline ..> storing: <<extend>>
 incoming .. online
 online ..> getting: <<extend>>
 receiving .. closingApp 
 closingApp ..> notification: <<extend>>
+searching .. successfulSearching
+successfulSearching ..> getUserData: <<extend>>
 @enduml
